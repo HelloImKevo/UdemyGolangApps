@@ -1,0 +1,139 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome to Your Dashboard</h1>
+        <div class="user-actions">
+            <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+        </div>
+    </div>
+    
+    <div class="dashboard-content">
+        <div class="user-profile-card">
+            <h2>Profile Information</h2>
+            <div class="profile-info">
+                <div class="info-item">
+                    <label>Name:</label>
+                    <span id="userFullName">{{.user.FirstName}} {{.user.LastName}}</span>
+                </div>
+                <div class="info-item">
+                    <label>Username:</label>
+                    <span id="userUsername">{{.user.Username}}</span>
+                </div>
+                <div class="info-item">
+                    <label>Email:</label>
+                    <span id="userEmail">{{.user.Email}}</span>
+                </div>
+                <div class="info-item">
+                    <label>Member Since:</label>
+                    <span id="userCreatedAt">{{.user.CreatedAt}}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-stats">
+            <h2>Application Features</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>🔐 Secure Authentication</h3>
+                    <p>Your session is protected with JWT tokens and secure password hashing.</p>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>📊 Session Management</h3>
+                    <p>Your login session is being tracked and managed securely.</p>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>🛡️ Data Protection</h3>
+                    <p>All your personal information is encrypted and stored safely.</p>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>🚀 Enterprise Ready</h3>
+                    <p>Built with enterprise-grade architecture and best practices.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="api-demo">
+            <h2>API Demonstration</h2>
+            <p>Click the button below to test the profile API endpoint:</p>
+            <button id="testApiBtn" class="btn btn-primary">Test Profile API</button>
+            <div id="apiResult" class="api-result" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Check if user is authenticated
+const token = localStorage.getItem('authToken');
+if (!token) {
+    window.location.href = '/login';
+}
+
+// Logout functionality
+document.getElementById('logoutBtn').addEventListener('click', function() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    window.location.href = '/';
+});
+
+// Test API functionality
+document.getElementById('testApiBtn').addEventListener('click', async function() {
+    const token = localStorage.getItem('authToken');
+    
+    try {
+        const response = await fetch('/api/auth/profile', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const result = await response.json();
+        const resultDiv = document.getElementById('apiResult');
+        
+        if (response.ok) {
+            resultDiv.innerHTML = `
+                <h4>API Response (Success):</h4>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+            resultDiv.className = 'api-result success';
+        } else {
+            resultDiv.innerHTML = `
+                <h4>API Response (Error):</h4>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+            resultDiv.className = 'api-result error';
+        }
+        
+        resultDiv.style.display = 'block';
+    } catch (error) {
+        const resultDiv = document.getElementById('apiResult');
+        resultDiv.innerHTML = `
+            <h4>Network Error:</h4>
+            <pre>${error.message}</pre>
+        `;
+        resultDiv.className = 'api-result error';
+        resultDiv.style.display = 'block';
+    }
+});
+
+// Update user info from localStorage if available
+const storedUser = localStorage.getItem('user');
+if (storedUser) {
+    const user = JSON.parse(storedUser);
+    document.getElementById('userFullName').textContent = `${user.first_name} ${user.last_name}`;
+    document.getElementById('userUsername').textContent = user.username;
+    document.getElementById('userEmail').textContent = user.email;
+    
+    if (user.created_at) {
+        const createdAt = new Date(user.created_at);
+        document.getElementById('userCreatedAt').textContent = createdAt.toLocaleDateString();
+    }
+}
+</script>
+{{end}}

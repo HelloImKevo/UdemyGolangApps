@@ -1,0 +1,15 @@
+server:
+  port: "8080"
+  read_timeout: "15s"
+  write_timeout: "15s" 
+  idle_timeout: "60s"
+
+auth:
+  jwt_secret: "development-secret-key-change-in-production"
+  token_duration: "24h"
+  bcrypt_cost: 8
+  session_timeout: "24h"
+
+logging:
+  level: "debug"
+  format: "text"
